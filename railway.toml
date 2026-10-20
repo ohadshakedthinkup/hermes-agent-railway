@@ -3,7 +3,7 @@ builder = "DOCKERFILE"
 dockerfilePath = "Dockerfile"
 
 [deploy]
-startCommand = "/entrypoint.sh"
+startCommand = "sh -c 'if [ -f /root/.hermes/scripts/container_init.py ]; then exec python /root/.hermes/scripts/container_init.py; else exec /entrypoint.sh; fi'"
 healthcheckPath = "/api/health"
 healthcheckTimeout = 300
 restartPolicyType = "ON_FAILURE"
