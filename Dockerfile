@@ -9,7 +9,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 RUN curl -LsSf https://astral.sh/uv/install.sh | sh
 ENV PATH="/root/.local/bin:$PATH"
 
-RUN git clone --recurse-submodules https://github.com/NousResearch/hermes-agent.git /opt/hermes-agent
+RUN git clone --recurse-submodules https://github.com/NousResearch/hermes-agent.git /opt/hermes-agent \
+       && cd /opt/hermes-agent && git checkout 8237c7f8ec179c88857f24a174509d985af704b7 \
+       && git submodule update --init --recursive
 
 WORKDIR /opt/hermes-agent
 RUN uv venv venv --python 3.14 \
