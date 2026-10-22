@@ -14,10 +14,25 @@ RUN git clone --recurse-submodules https://github.com/NousResearch/hermes-agent.
        && git submodule update --init --recursive
 
 WORKDIR /opt/hermes-agent
+RUN apt-get update && apt-get install -y --no-install-recommends build-essential wget \
+ && wget -q https://www.sqlite.org/2026/sqlite-autoconf-3510300.tar.gz \
+ && tar xzf sqlite-autoconf-3510300.tar.gz && cd sqlite-autoconf-3510300 \
+ && ./configure --prefix=/usr/local --enable-fts5 && make -j"$(nproc)" && make install \
+ && cd .. && rm -rf sqlite-autoconf-3510300* \
+ && apt-get purge -y build-essential wget && apt-get autoremove -y \
+ && rm -rf /var/lib/apt/lists/*
+ENV LD_LIBRARY_PATH=/usr/local/lib
 RUN uv venv venv --python 3.14 \
     && VIRTUAL_ENV=/opt/hermes-agent/venv uv pip install -e ".[all,messaging,anthropic]"
 
 ENV PATH="/opt/hermes-agent/venv/bin:$PATH"
+ENV SIDECAR_PYTHON="/opt/hermes-agent/venv/bin/python3"
+RUN apt-get update && apt-get install -y --no-install-recommends \
+      libnspr4 libnss3 libasound2t64 libatk1.0-0t64 libatk-bridge2.0-0t64 \
+      libcups2t64 libdrm2 libxkbcommon0 libxcomposite1 libxdamage1 libxfixes3 \
+      libxrandr2 libgbm1 libpango-1.0-0 libcairo2 \
+ && rm -rf /var/lib/apt/lists/*
+
 
 RUN mkdir -p /root/.hermes/{cron,sessions,logs,memories,skills,pairing,hooks,image_cache,audio_cache} \
     && cp cli-config.yaml.example /root/.hermes/config.yaml \
